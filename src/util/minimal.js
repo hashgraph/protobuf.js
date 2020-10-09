@@ -14,8 +14,11 @@ util.EventEmitter = require("@protobufjs/eventemitter");
 util.float = require("@protobufjs/float");
 
 // requires modules optionally and hides the call from bundlers
-util.inquire = require("@protobufjs/inquire");
-
+util.inquire = function inquire(module) {
+    // all calls to inquire will fail
+    return null;
+};
+    
 // converts to / from utf8 encoded strings
 util.utf8 = require("@protobufjs/utf8");
 
@@ -124,14 +127,12 @@ util.isSet = function isSet(obj, prop) {
  * @type {Constructor<Buffer>}
  */
 util.Buffer = (function() {
-    try {
-        var Buffer = util.inquire("buffer").Buffer;
-        // refuse to use non-node buffers if not explicitly assigned (perf reasons):
-        return Buffer.prototype.utf8Write ? Buffer : /* istanbul ignore next */ null;
-    } catch (e) {
-        /* istanbul ignore next */
-        return null;
+    // refuse to use non-node buffers if not explicitly assigned (perf reasons):
+    if (typeof Buffer !== "undefined" && Buffer.prototype.utf8Write) {
+        return Buffer;
     }
+
+    return null;
 })();
 
 // Internal alias of or polyfull for Buffer.from.
@@ -177,9 +178,7 @@ util.Array = typeof Uint8Array !== "undefined" ? Uint8Array /* istanbul ignore n
  * Long.js's Long class if available.
  * @type {Constructor<Long>}
  */
-util.Long = /* istanbul ignore next */ util.global.dcodeIO && /* istanbul ignore next */ util.global.dcodeIO.Long
-         || /* istanbul ignore next */ util.global.Long
-         || util.inquire("long");
+util.Long = require("long");
 
 /**
  * Regular expression used to verify 2 bit (`bool`) map keys.
